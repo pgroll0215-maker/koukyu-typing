@@ -1,1 +1,1 @@
-# koukyu-typing
+# yao-typing
