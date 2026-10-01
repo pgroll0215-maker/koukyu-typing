@@ -1,0 +1,1907 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>公九タイピング</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif;
+    color: white;
+    text-align: center;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,.08), transparent 20%),
+        radial-gradient(circle at 80% 70%, rgba(255,215,0,.08), transparent 25%),
+        linear-gradient(135deg, #063f29, #008153 50%, #053b27);
+    overflow-x: hidden;
+}
+
+body::before {
+    content: "🀄";
+    position: fixed;
+    font-size: 500px;
+    opacity: 0.025;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) rotate(-15deg);
+    pointer-events: none;
+}
+
+.container {
+    width: min(900px, 94%);
+    margin: auto;
+    padding: 25px 10px 50px;
+}
+
+h1 {
+    font-size: clamp(38px, 7vw, 72px);
+    margin: 20px 0 10px;
+    color: #ffd84a;
+    text-shadow:
+        3px 3px 0 #a40000,
+        6px 6px 0 rgba(0,0,0,.3);
+}
+
+.subtitle {
+    font-size: 18px;
+    opacity: .9;
+    margin-bottom: 25px;
+}
+
+.panel {
+    background: rgba(0,0,0,.28);
+    border: 4px solid #e3bd4b;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow:
+        0 10px 30px rgba(0,0,0,.4),
+        inset 0 0 30px rgba(255,255,255,.04);
+}
+
+button {
+    border: none;
+    border-radius: 12px;
+    padding: 15px 35px;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+    background: linear-gradient(#ef3d35, #a70d08);
+    border: 3px solid #ffd84a;
+    box-shadow:
+        0 6px 0 #680000,
+        0 8px 15px rgba(0,0,0,.3);
+}
+
+button:hover {
+    transform: translateY(-2px);
+}
+
+button:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #680000;
+}
+
+#startScreen,
+#gameScreen,
+#resultScreen {
+    display: none;
+}
+
+/* =========================
+   パスワード画面
+========================= */
+
+#passwordScreen {
+    display: block;
+}
+
+.passwordBox {
+    max-width: 520px;
+    margin: 70px auto 0;
+}
+
+.passwordInput {
+    width: min(400px, 90%);
+    padding: 15px;
+    font-size: 24px;
+    border-radius: 12px;
+    border: 4px solid #e2c350;
+    outline: none;
+    text-align: center;
+    background: white;
+    color: #222;
+    margin: 15px 0;
+}
+
+.passwordInput:focus {
+    border-color: #ffeb73;
+    box-shadow: 0 0 15px rgba(255,235,115,.7);
+}
+
+#passwordError {
+    min-height: 30px;
+    color: #ff8b8b;
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+/* =========================
+   ゲーム
+========================= */
+
+.status {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 18px;
+}
+
+.statusBox {
+    flex: 1;
+    background: rgba(0,0,0,.45);
+    border: 2px solid #d7b84b;
+    border-radius: 12px;
+    padding: 10px;
+}
+
+.statusTitle {
+    font-size: 13px;
+    opacity: .8;
+}
+
+.statusValue {
+    font-size: 32px;
+    font-weight: bold;
+    color: #ffe05c;
+}
+
+.personName {
+    font-size: 23px;
+    font-weight: bold;
+    color: #ffe15d;
+    margin-bottom: 5px;
+}
+
+.prompt {
+    font-size: clamp(25px, 5vw, 42px);
+    font-weight: bold;
+    margin: 5px 0;
+    line-height: 1.4;
+    text-shadow: 2px 2px 3px black;
+}
+
+.reading {
+    color: #d5f4e4;
+    font-size: 17px;
+    margin-bottom: 15px;
+}
+
+.photoFrame {
+    width: min(500px, 100%);
+    height: 350px;
+    margin: 0 auto 18px;
+    background: #111;
+    border: 6px solid #e4c45c;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0,0,0,.5);
+}
+
+#personPhoto {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #111;
+}
+
+#inputArea {
+    min-height: 66px;
+}
+
+.typingInput {
+    width: min(650px, 95%);
+    padding: 15px;
+    font-size: 25px;
+    border-radius: 12px;
+    border: 4px solid #e2c350;
+    outline: none;
+    text-align: center;
+    background: white;
+    color: #222;
+}
+
+.typingInput:focus {
+    border-color: #ffeb73;
+    box-shadow: 0 0 15px rgba(255,235,115,.7);
+}
+
+#correctMessage {
+    height: 35px;
+    margin-top: 8px;
+    font-size: 25px;
+    font-weight: bold;
+    color: #ffe14e;
+}
+
+.correctFlash {
+    animation: correctFlash .25s;
+}
+
+@keyframes correctFlash {
+    0% {
+        background-color: rgba(255,255,255,0);
+    }
+
+    50% {
+        background-color: rgba(255,255,255,.35);
+    }
+
+    100% {
+        background-color: rgba(255,255,255,0);
+    }
+}
+
+/* =========================
+   結果
+========================= */
+
+.resultScore {
+    font-size: 55px;
+    font-weight: bold;
+    color: #ffe05c;
+    margin: 15px;
+}
+
+.subResult {
+    font-size: 18px;
+    opacity: .9;
+    margin-bottom: 15px;
+}
+
+.tanabeMessage {
+    max-width: 650px;
+    margin: 20px auto 30px;
+    padding: 20px;
+    background: rgba(0,0,0,.45);
+    border: 3px solid #ffe05c;
+    border-radius: 15px;
+}
+
+.tanabeTitle {
+    font-size: 18px;
+    color: #ffe05c;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+#tanabeComment {
+    font-size: clamp(22px, 4vw, 32px);
+    font-weight: bold;
+    line-height: 1.5;
+}
+
+.nameInput {
+    width: min(400px, 90%);
+    padding: 12px;
+    font-size: 20px;
+    border-radius: 10px;
+    border: 3px solid #e0bf4c;
+    margin: 10px;
+}
+
+.ranking {
+    max-width: 520px;
+    margin: 25px auto 0;
+    text-align: left;
+}
+
+.rankRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 15px;
+    margin: 5px 0;
+    background: rgba(0,0,0,.35);
+    border-radius: 8px;
+}
+
+.rankRow:first-child {
+    background: rgba(255,215,0,.25);
+    border: 1px solid #ffe05c;
+}
+
+@media(max-width:600px) {
+
+    .photoFrame {
+        height: 280px;
+    }
+
+    .panel {
+        padding: 15px;
+    }
+
+    .statusValue {
+        font-size: 25px;
+    }
+
+    .passwordBox {
+        margin-top: 30px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+
+<!-- =========================
+     パスワード画面
+========================= -->
+
+<div id="passwordScreen">
+
+    <div class="passwordBox">
+
+        <h1>公九タイピング</h1>
+
+        <div class="subtitle">
+            PASSWORD
+        </div>
+
+        <div class="panel">
+
+            <p style="font-size:22px; font-weight:bold;">
+                パスワードを入力してください
+            </p>
+
+            <input
+                id="passwordInput"
+                class="passwordInput"
+                type="password"
+                autocomplete="off"
+                placeholder="PASSWORD"
+            >
+
+            <br>
+
+            <button onclick="checkPassword()">
+                ENTER
+            </button>
+
+            <div id="passwordError"></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     スタート画面
+========================= -->
+
+<div id="startScreen">
+
+    <h1>公九タイピング</h1>
+
+    <div class="subtitle">
+        あの名言を打ちまくれ！
+    </div>
+
+    <div class="panel">
+
+        <p style="font-size:20px;">
+            制限時間は <strong>60秒</strong>
+        </p>
+
+        <p>
+            表示された言葉を「読み」で入力！
+            <br>
+            正解した文字数がスコアになります。
+        </p>
+
+        <br>
+
+        <button onclick="startGame()">
+            ゲーム開始
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     ゲーム画面
+========================= -->
+
+<div id="gameScreen">
+
+    <h1 style="font-size:45px;">
+        公九タイピング
+    </h1>
+
+    <div class="status">
+
+        <div class="statusBox">
+
+            <div class="statusTitle">
+                残り時間
+            </div>
+
+            <div class="statusValue">
+                <span id="time">60</span>秒
+            </div>
+
+        </div>
+
+
+        <div class="statusBox">
+
+            <div class="statusTitle">
+                スコア
+            </div>
+
+            <div class="statusValue">
+                <span id="score">0</span>文字
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="panel">
+
+        <div
+            class="personName"
+            id="personName">
+        </div>
+
+        <div
+            class="prompt"
+            id="prompt">
+        </div>
+
+        <div
+            class="reading"
+            id="reading">
+        </div>
+
+
+        <div class="photoFrame">
+
+            <img
+                id="personPhoto"
+                alt="人物写真"
+            >
+
+        </div>
+
+
+        <div id="inputArea"></div>
+
+
+        <div id="correctMessage"></div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     結果画面
+========================= -->
+
+<div id="resultScreen">
+
+    <h1>結果発表</h1>
+
+    <div class="panel">
+
+        <div>
+            あなたの記録
+        </div>
+
+        <div
+            class="resultScore"
+            id="finalScore">
+        </div>
+
+        <div
+            class="subResult"
+            id="finalQuestions">
+        </div>
+
+
+        <div class="tanabeMessage">
+
+            <div class="tanabeTitle">
+                田邉からの一言
+            </div>
+
+            <div id="tanabeComment"></div>
+
+        </div>
+
+
+        <p>
+            ランキングに名前を残そう
+        </p>
+
+        <input
+            class="nameInput"
+            id="playerName"
+            maxlength="12"
+            placeholder="名前を入力"
+        >
+
+        <br>
+
+        <button onclick="saveRanking()">
+            ランキング登録
+        </button>
+
+
+        <div
+            class="ranking"
+            id="ranking">
+        </div>
+
+        <br>
+
+        <button onclick="restartGame()">
+            もう一度遊ぶ
+        </button>
+
+    </div>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* ==================================================
+   パスワード
+================================================== */
+
+const GAME_PASSWORD = "yao";
+
+
+function checkPassword() {
+
+    const input =
+        document.getElementById("passwordInput");
+
+    const error =
+        document.getElementById("passwordError");
+
+
+    if(input.value === GAME_PASSWORD) {
+
+        error.textContent = "";
+
+        input.value = "";
+
+        document.getElementById(
+            "passwordScreen"
+        ).style.display = "none";
+
+
+        document.getElementById(
+            "startScreen"
+        ).style.display = "block";
+
+    }
+
+    else {
+
+        error.textContent =
+            "パスワードが違います";
+
+        input.value = "";
+
+        input.focus();
+
+    }
+
+}
+
+
+/*
+パスワード欄では
+Enterキーでも決定できる
+*/
+document.getElementById(
+    "passwordInput"
+).addEventListener(
+    "keydown",
+    function(event) {
+
+        if(event.key === "Enter") {
+
+            event.preventDefault();
+
+            checkPassword();
+
+        }
+
+    }
+);
+
+
+/* ==================================================
+   写真
+================================================== */
+
+const photos = {
+
+    horie: [
+        "images/horie/1790863013296.jpg",
+        "images/horie/1790863025431.jpg",
+        "images/horie/1790863197740.jpg"
+    ],
+
+    imai: [
+        "images/imai/1790862807034.jpg",
+        "images/imai/1790862983715.jpg"
+    ],
+
+    kusakabe: [
+        "images/kusakabe/1790862827695.jpg",
+        "images/kusakabe/1790862833638.jpg",
+        "images/kusakabe/1790862845928.jpg",
+        "images/kusakabe/1790862858221.jpg",
+        "images/kusakabe/1790862956680.jpg"
+    ],
+
+    mattsun: [
+        "images/mattsun/1790862769836.jpg",
+        "images/mattsun/1790862813346.jpg",
+        "images/mattsun/1790862819341.jpg",
+        "images/mattsun/1790862838278.jpg",
+        "images/mattsun/1790862910060.jpg",
+        "images/mattsun/1790862915932.jpg",
+        "images/mattsun/1790862963665.jpg"
+    ],
+
+    mitomi: [
+        "images/mitomi/1790865047519.jpg",
+        "images/mitomi/m1.jpg.jpg"
+    ],
+
+    shoji: [
+        "images/shoji/1790862936760.jpg",
+        "images/shoji/1790862944962.jpg",
+        "images/shoji/1790863088228.jpg",
+        "images/shoji/1790863134621.jpg"
+    ],
+
+    takagami: [
+        "images/takagami/1790862923796.jpg",
+        "images/takagami/1790863116780.jpg",
+        "images/takagami/1790863282147.jpg"
+    ],
+
+    tanabe: [
+        "images/tanabe/1790862796586.jpg",
+        "images/tanabe/1790863192046.jpg"
+    ],
+
+    usui: [
+        "images/usui/1790863029197.jpg"
+    ],
+
+    yamamoto: [
+        "images/yamamoto/1790863153624.jpg",
+        "images/yamamoto/1790864848855.jpg",
+        "images/yamamoto/1790864853921.jpg",
+        "images/yamamoto/1790864863159.jpg",
+        "images/yamamoto/1790864940172.jpg"
+    ],
+
+    yamashita: [
+        "images/yamashita/1790863041695.jpg",
+        "images/yamashita/1790863238443.jpg"
+    ]
+
+};
+
+
+/* ==================================================
+   お題 全22問
+================================================== */
+
+const questions = [
+
+    {
+        person:"日下部",
+        id:"kusakabe",
+        text:"ぜってー見てくれよな",
+        reading:"ぜってーみてくれよな"
+    },
+
+    {
+        person:"日下部",
+        id:"kusakabe",
+        text:"オッス！オラ駿！",
+        reading:"おっすおらしゅん"
+    },
+
+    {
+        person:"日下部",
+        id:"kusakabe",
+        text:"ポーカー日本13位の男",
+        reading:"ぽーかーにほんじゅうさんいのおとこ"
+    },
+
+    {
+        person:"日下部",
+        id:"kusakabe",
+        text:"爆報",
+        reading:"ばくほう"
+    },
+
+    {
+        person:"日下部",
+        id:"kusakabe",
+        text:"こいつはからやぶコータスだ！",
+        reading:"こいつはからやぶこーたすだ"
+    },
+
+    {
+        person:"日下部",
+        id:"kusakabe",
+        text:"誰か漆喰塗ってくれえ！",
+        reading:"だれかしっくいぬってくれえ"
+    },
+
+    {
+        person:"山本",
+        id:"yamamoto",
+        text:"二郎行く？",
+        reading:"じろういく"
+    },
+
+    {
+        person:"山本",
+        id:"yamamoto",
+        text:"シャオラ",
+        reading:"しゃおら"
+    },
+
+    {
+        person:"山下",
+        id:"yamashita",
+        text:"待ってよ登りたくなるじゃん",
+        reading:"まってよのぼりたくなるじゃん"
+    },
+
+    {
+        person:"庄司",
+        id:"shoji",
+        text:"誰がハゲじゃい",
+        reading:"だれがはげじゃい"
+    },
+
+    {
+        person:"庄司",
+        id:"shoji",
+        text:"カブトムシ潰し男",
+        reading:"かぶとむしつぶしおとこ"
+    },
+
+    {
+        person:"まっつん",
+        id:"mattsun",
+        text:"コンテンツ消費委員会",
+        reading:"こんてんつしょうひいいんかい"
+    },
+
+    {
+        person:"まっつん",
+        id:"mattsun",
+        text:"宇都宮の爆速ヴィッツ乗り",
+        reading:"うつのみやのばくそくゔぃっつのり"
+    },
+
+    {
+        person:"まっつん",
+        id:"mattsun",
+        text:"麻婆豆腐食った",
+        reading:"まーぼーどうふくった"
+    },
+
+    {
+        person:"今井",
+        id:"imai",
+        text:"何が悪い",
+        reading:"なにがわるい"
+    },
+
+    {
+        person:"碓氷",
+        id:"usui",
+        text:"非公認会計士",
+        reading:"ひこうにんかいけいし"
+    },
+
+    {
+        person:"三富",
+        id:"mitomi",
+        text:"ち、ちげーし！",
+        reading:"ちちげーし"
+    },
+
+    {
+        person:"田邉",
+        id:"tanabe",
+        text:"超絶朗報　球春、来る",
+        reading:"ちょうぜつろうほうきゅうしゅんくる"
+    },
+
+    {
+        person:"堀江",
+        id:"horie",
+        text:"おれここでいいよ(クソ狭スペース)",
+        reading:"おれここでいいよくそせますぺーす"
+    },
+
+    {
+        person:"堀江",
+        id:"horie",
+        text:"車水没した",
+        reading:"くるますいぼつした"
+    },
+
+    {
+        person:"高神",
+        id:"takagami",
+        text:"パブロン！",
+        reading:"ぱぶろん"
+    },
+
+    {
+        person:"高神",
+        id:"takagami",
+        text:"会社からメロン貰ったけど誰かいる？",
+        reading:"かいしゃからめろんもらったけどだれかいる"
+    }
+
+];
+
+
+/* ==================================================
+   ゲーム変数
+================================================== */
+
+let score = 0;
+
+let correctQuestions = 0;
+
+let timeLeft = 60;
+
+let currentQuestion = null;
+
+let timer = null;
+
+let gameRunning = false;
+
+let answerLocked = false;
+
+let remainingQuestions = [];
+
+
+/* ==================================================
+   文字の正規化
+================================================== */
+
+function normalize(text) {
+
+    return text
+        .toLowerCase()
+        .replace(/[ 　]/g, "")
+        .replace(/[！!？?,，。、．.（）()「」『』]/g, "")
+        .replace(/ヴ/g, "ゔ")
+        .trim();
+
+}
+
+
+/* ==================================================
+   スコア用文字数
+================================================== */
+
+function getCharacterCount(text) {
+
+    return Array.from(
+        normalize(text)
+    ).length;
+
+}
+
+
+/* ==================================================
+   古い入力欄を完全削除
+================================================== */
+
+function destroyTypingInput() {
+
+    const inputArea =
+        document.getElementById("inputArea");
+
+
+    /*
+    古いinputが存在する場合、
+    まずフォーカスを外してから削除。
+    */
+    const oldInput =
+        inputArea.querySelector("input");
+
+
+    if(oldInput) {
+
+        oldInput.blur();
+
+        oldInput.value = "";
+
+    }
+
+
+    inputArea.replaceChildren();
+
+}
+
+
+/* ==================================================
+   新しい入力欄を作成
+================================================== */
+
+function createTypingInput() {
+
+    const inputArea =
+        document.getElementById("inputArea");
+
+
+    inputArea.replaceChildren();
+
+
+    const input =
+        document.createElement("input");
+
+
+    input.type =
+        "text";
+
+    input.className =
+        "typingInput";
+
+    input.placeholder =
+        "ここに入力";
+
+    input.autocomplete =
+        "off";
+
+
+    input.setAttribute(
+        "autocorrect",
+        "off"
+    );
+
+
+    input.setAttribute(
+        "autocapitalize",
+        "off"
+    );
+
+
+    input.setAttribute(
+        "spellcheck",
+        "false"
+    );
+
+
+    inputArea.appendChild(
+        input
+    );
+
+
+    setupTypingInput(
+        input
+    );
+
+
+    /*
+    新しい入力欄へフォーカス
+    */
+    requestAnimationFrame(() => {
+
+        if(input.isConnected) {
+
+            input.value = "";
+
+            input.focus();
+
+        }
+
+    });
+
+}
+
+
+/* ==================================================
+   入力判定
+================================================== */
+
+function setupTypingInput(input) {
+
+    let isComposing = false;
+
+
+    /*
+    共通正解判定
+    */
+    function checkAnswer() {
+
+        if(!gameRunning) {
+            return;
+        }
+
+
+        if(answerLocked) {
+            return;
+        }
+
+
+        if(!currentQuestion) {
+            return;
+        }
+
+
+        /*
+        古い入力欄から飛んできたイベントは無視
+        */
+        if(!input.isConnected) {
+            return;
+        }
+
+
+        const typed =
+            normalize(
+                input.value
+            );
+
+
+        const answer =
+            normalize(
+                currentQuestion.reading
+            );
+
+
+        if(typed === answer) {
+
+            correctAnswer();
+
+        }
+
+    }
+
+
+    /*
+    日本語入力開始
+    */
+    input.addEventListener(
+        "compositionstart",
+        function() {
+
+            isComposing = true;
+
+        }
+    );
+
+
+    /*
+    日本語入力確定
+    */
+    input.addEventListener(
+        "compositionend",
+        function() {
+
+            isComposing = false;
+
+
+            /*
+            IME確定後に正解判定
+            */
+            setTimeout(() => {
+
+                checkAnswer();
+
+            }, 0);
+
+        }
+    );
+
+
+    /*
+    通常のinputイベント
+    */
+    input.addEventListener(
+        "input",
+        function(event) {
+
+            /*
+            日本語変換中は待つ
+            */
+            if(
+                isComposing ||
+                event.isComposing
+            ) {
+
+                return;
+
+            }
+
+
+            checkAnswer();
+
+        }
+    );
+
+}
+
+
+/* ==================================================
+   正解処理
+================================================== */
+
+function correctAnswer() {
+
+    if(answerLocked) {
+        return;
+    }
+
+
+    answerLocked =
+        true;
+
+
+    const gainedCharacters =
+        getCharacterCount(
+            currentQuestion.reading
+        );
+
+
+    score +=
+        gainedCharacters;
+
+
+    correctQuestions++;
+
+
+    document.getElementById(
+        "score"
+    ).textContent =
+        score;
+
+
+    /*
+    ★重要
+
+    正解した瞬間、
+    入力欄そのものを削除する。
+
+    前の問題のIME状態を
+    次の問題へ持ち越さない。
+    */
+    destroyTypingInput();
+
+
+    playCorrectSound();
+
+
+    document.getElementById(
+        "correctMessage"
+    ).textContent =
+        "正解！ +" +
+        gainedCharacters +
+        "文字";
+
+
+    document.body.classList.add(
+        "correctFlash"
+    );
+
+
+    setTimeout(() => {
+
+        document.body.classList.remove(
+            "correctFlash"
+        );
+
+    }, 250);
+
+
+    /*
+    少しだけ正解表示を見せる
+    */
+    setTimeout(() => {
+
+        if(!gameRunning) {
+            return;
+        }
+
+
+        document.getElementById(
+            "correctMessage"
+        ).textContent =
+            "";
+
+
+        nextQuestion();
+
+    }, 180);
+
+}
+
+
+/* ==================================================
+   ゲーム開始
+================================================== */
+
+function startGame() {
+
+    if(timer) {
+
+        clearInterval(
+            timer
+        );
+
+    }
+
+
+    score =
+        0;
+
+
+    correctQuestions =
+        0;
+
+
+    timeLeft =
+        60;
+
+
+    currentQuestion =
+        null;
+
+
+    gameRunning =
+        true;
+
+
+    answerLocked =
+        true;
+
+
+    /*
+    全22問をコピー。
+
+    spliceで取り出すので、
+    同じゲーム中に同じ問題は出ない。
+    */
+    remainingQuestions =
+        [...questions];
+
+
+    document.getElementById(
+        "startScreen"
+    ).style.display =
+        "none";
+
+
+    document.getElementById(
+        "resultScreen"
+    ).style.display =
+        "none";
+
+
+    document.getElementById(
+        "gameScreen"
+    ).style.display =
+        "block";
+
+
+    document.getElementById(
+        "score"
+    ).textContent =
+        "0";
+
+
+    document.getElementById(
+        "time"
+    ).textContent =
+        "60";
+
+
+    document.getElementById(
+        "correctMessage"
+    ).textContent =
+        "";
+
+
+    destroyTypingInput();
+
+
+    nextQuestion();
+
+
+    timer =
+        setInterval(() => {
+
+            timeLeft--;
+
+
+            document.getElementById(
+                "time"
+            ).textContent =
+                timeLeft;
+
+
+            if(timeLeft <= 0) {
+
+                endGame();
+
+            }
+
+        }, 1000);
+
+}
+
+
+/* ==================================================
+   次のお題
+================================================== */
+
+function nextQuestion() {
+
+    if(!gameRunning) {
+        return;
+    }
+
+
+    answerLocked =
+        true;
+
+
+    /*
+    念のため、ここでも古い入力欄を削除。
+    */
+    destroyTypingInput();
+
+
+    /*
+    全問題を打ち終えた場合
+    */
+    if(
+        remainingQuestions.length === 0
+    ) {
+
+        endGame();
+
+        return;
+
+    }
+
+
+    const randomIndex =
+        Math.floor(
+            Math.random() *
+            remainingQuestions.length
+        );
+
+
+    currentQuestion =
+        remainingQuestions.splice(
+            randomIndex,
+            1
+        )[0];
+
+
+    document.getElementById(
+        "personName"
+    ).textContent =
+        currentQuestion.person;
+
+
+    document.getElementById(
+        "prompt"
+    ).textContent =
+        currentQuestion.text;
+
+
+    document.getElementById(
+        "reading"
+    ).textContent =
+        "よみ：" +
+        currentQuestion.reading;
+
+
+    /*
+    人物写真をランダム表示
+    */
+    const personPhotos =
+        photos[
+            currentQuestion.id
+        ];
+
+
+    if(
+        personPhotos &&
+        personPhotos.length > 0
+    ) {
+
+        const randomPhoto =
+            personPhotos[
+                Math.floor(
+                    Math.random() *
+                    personPhotos.length
+                )
+            ];
+
+
+        document.getElementById(
+            "personPhoto"
+        ).src =
+            randomPhoto;
+
+    }
+
+
+    /*
+    新しい問題が決まった後で
+    新品の入力欄を作る。
+    */
+    createTypingInput();
+
+
+    answerLocked =
+        false;
+
+}
+
+
+/* ==================================================
+   正解音
+================================================== */
+
+function playCorrectSound() {
+
+    try {
+
+        const AudioContext =
+            window.AudioContext ||
+            window.webkitAudioContext;
+
+
+        const ctx =
+            new AudioContext();
+
+
+        const oscillator =
+            ctx.createOscillator();
+
+
+        const gain =
+            ctx.createGain();
+
+
+        oscillator.connect(
+            gain
+        );
+
+
+        gain.connect(
+            ctx.destination
+        );
+
+
+        oscillator.type =
+            "sine";
+
+
+        oscillator.frequency.setValueAtTime(
+            660,
+            ctx.currentTime
+        );
+
+
+        oscillator.frequency.setValueAtTime(
+            880,
+            ctx.currentTime + 0.08
+        );
+
+
+        gain.gain.setValueAtTime(
+            0.15,
+            ctx.currentTime
+        );
+
+
+        gain.gain.exponentialRampToValueAtTime(
+            0.01,
+            ctx.currentTime + 0.18
+        );
+
+
+        oscillator.start();
+
+
+        oscillator.stop(
+            ctx.currentTime + 0.18
+        );
+
+    }
+
+    catch(e) {
+
+    }
+
+}
+
+
+/* ==================================================
+   田邉からの一言
+
+   ★新しい基準
+================================================== */
+
+function getTanabeComment(score) {
+
+    /*
+    0～89文字
+    */
+    if(score <= 89) {
+
+        return "ざっこｗｗｗ";
+
+    }
+
+
+    /*
+    90～109文字
+    */
+    else if(score <= 109) {
+
+        return "いやー微妙やな";
+
+    }
+
+
+    /*
+    110～129文字
+    */
+    else if(score <= 129) {
+
+        return "んー悪くはないけどなｗ";
+
+    }
+
+
+    /*
+    130～149文字
+    */
+    else if(score <= 149) {
+
+        return "まあいいんじゃね？";
+
+    }
+
+
+    /*
+    150～169文字
+    */
+    else if(score <= 169) {
+
+        return "けっこうやんじゃんｗ";
+
+    }
+
+
+    /*
+    170文字以上
+    */
+    else {
+
+        return "今度会ったら言ってやるよ、おめでとうって";
+
+    }
+
+}
+
+
+/* ==================================================
+   ゲーム終了
+================================================== */
+
+function endGame() {
+
+    if(!gameRunning) {
+        return;
+    }
+
+
+    gameRunning =
+        false;
+
+
+    answerLocked =
+        true;
+
+
+    clearInterval(
+        timer
+    );
+
+
+    timer =
+        null;
+
+
+    destroyTypingInput();
+
+
+    document.getElementById(
+        "gameScreen"
+    ).style.display =
+        "none";
+
+
+    document.getElementById(
+        "resultScreen"
+    ).style.display =
+        "block";
+
+
+    document.getElementById(
+        "finalScore"
+    ).textContent =
+        score +
+        "文字";
+
+
+    document.getElementById(
+        "finalQuestions"
+    ).textContent =
+        "正解したお題：" +
+        correctQuestions +
+        "問";
+
+
+    document.getElementById(
+        "tanabeComment"
+    ).textContent =
+        "「" +
+        getTanabeComment(
+            score
+        ) +
+        "」";
+
+
+    showRanking();
+
+}
+
+
+/* ==================================================
+   ランキング保存
+================================================== */
+
+function saveRanking() {
+
+    let name =
+        document.getElementById(
+            "playerName"
+        ).value.trim();
+
+
+    if(name === "") {
+
+        name =
+            "名無し";
+
+    }
+
+
+    let ranking =
+        JSON.parse(
+            localStorage.getItem(
+                "koukyuTypingRankingV2"
+            )
+        ) || [];
+
+
+    ranking.push({
+
+        name:
+            name,
+
+        score:
+            score,
+
+        questions:
+            correctQuestions,
+
+        date:
+            new Date()
+                .toLocaleDateString(
+                    "ja-JP"
+                )
+
+    });
+
+
+    /*
+    文字数が多い順
+    */
+    ranking.sort(
+        (a,b) =>
+            b.score -
+            a.score
+    );
+
+
+    /*
+    TOP10
+    */
+    ranking =
+        ranking.slice(
+            0,
+            10
+        );
+
+
+    localStorage.setItem(
+        "koukyuTypingRankingV2",
+        JSON.stringify(
+            ranking
+        )
+    );
+
+
+    document.getElementById(
+        "playerName"
+    ).value =
+        "";
+
+
+    showRanking();
+
+}
+
+
+/* ==================================================
+   ランキング表示
+================================================== */
+
+function showRanking() {
+
+    let ranking =
+        JSON.parse(
+            localStorage.getItem(
+                "koukyuTypingRankingV2"
+            )
+        ) || [];
+
+
+    let html =
+        "<h2>🏆 文字数ランキング</h2>";
+
+
+    if(ranking.length === 0) {
+
+        html +=
+            "<p>まだ記録がありません</p>";
+
+    }
+
+
+    ranking.forEach(
+        (record,index) => {
+
+            html += `
+
+                <div class="rankRow">
+
+                    <span>
+                        ${index + 1}位　
+                        ${escapeHTML(record.name)}
+                    </span>
+
+                    <strong>
+                        ${record.score}文字
+                    </strong>
+
+                </div>
+
+            `;
+
+        }
+    );
+
+
+    document.getElementById(
+        "ranking"
+    ).innerHTML =
+        html;
+
+}
+
+
+/* ==================================================
+   名前のHTML対策
+================================================== */
+
+function escapeHTML(text) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+
+    div.textContent =
+        text;
+
+
+    return div.innerHTML;
+
+}
+
+
+/* ==================================================
+   もう一度遊ぶ
+================================================== */
+
+function restartGame() {
+
+    destroyTypingInput();
+
+
+    document.getElementById(
+        "resultScreen"
+    ).style.display =
+        "none";
+
+
+    document.getElementById(
+        "startScreen"
+    ).style.display =
+        "block";
+
+
+    document.getElementById(
+        "playerName"
+    ).value =
+        "";
+
+}
+
+</script>
+
+</body>
+</html>
